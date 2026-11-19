@@ -48,17 +48,24 @@ export async function POST(request: NextRequest) {
         redirectTo: `${domain}/auth/callback?next=/portal`,
       });
       if (inviteError) {
-        console.error("Failed to send invite email:", inviteError);
-        // Don't return error — purchase is already recorded, user can request new link
+        console.error("Invite error (may be existing user):", inviteError.message);
       }
 
-      // Insert purchase record
-      if (inviteData?.user?.id) {
+      // Get user ID — from invite response or by looking up existing user
+      let userId: string | undefined = inviteData?.user?.id;
+      if (!userId) {
+        const { data: listData } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+        const existing = listData?.users?.find((u) => u.email === customerEmail);
+        userId = existing?.id;
+      }
+
+      // Record purchase
+      if (userId) {
         const { error: purchaseError } = await supabase
           .from("purchases")
           .upsert(
             {
-              user_id: inviteData.user.id,
+              user_id: userId,
               course_id: courseId,
               stripe_session_id: stripeSessionId,
               status: "paid",
@@ -66,11 +73,11 @@ export async function POST(request: NextRequest) {
             },
             { onConflict: "stripe_session_id" }
           );
-
         if (purchaseError) {
-          console.error("Failed to insert purchase:", purchaseError);
-          // Don't fail – user is invited, we can retry purchase record separately
+          console.error("Failed to record purchase:", purchaseError);
         }
+      } else {
+        console.error("Could not resolve user ID for email:", customerEmail);
       }
 
       return NextResponse.json({ received: true });
