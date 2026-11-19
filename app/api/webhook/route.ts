@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
       // Invite user (creates if new, re-invites if existing) and send magic link email
       const domain = process.env.NEXT_PUBLIC_DOMAIN || "https://seatribe-academy-portal.vercel.app";
       const { data: inviteData, error: inviteError } = await supabase.auth.admin.inviteUserByEmail(customerEmail, {
-        redirectTo: `${domain}/auth/callback?next=/portal`,
+        redirectTo: `${domain}/auth/callback?next=/register`,
       });
       if (inviteError) {
         console.error("Invite error (may be existing user):", inviteError.message);
