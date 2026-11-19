@@ -49,3 +49,4 @@ npm run dev
 Deploy on Vercel. Set environment variables in the Vercel dashboard.
 
 Configure the Stripe webhook endpoint to `https://your-domain.vercel.app/api/webhook` with the `checkout.session.completed` event.
+
