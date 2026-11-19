@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SeaTribe Skipper Academy</title>
+  <link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --petrol:   #417970;
+      --teal:     #86a6a2;
+      --ink:      #3c3d38;
+      --paper:    #f7f1ea;
+      --grey:     #dedad4;
+      --white:    #ffffff;
+      --shadow:   0 2px 12px rgba(65,121,112,.12);
+      --radius:   10px;
+    }
+
+    body {
+      font-family: 'Open Sans', sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+
+    h1,h2,h3,h4,h5 { font-family: 'Marcellus', serif; }
+
+    /* ── Tab bar ── */
+    .tab-bar {
+      background: var(--white);
+      border-bottom: 2px solid var(--grey);
+      display: flex;
+      gap: 2px;
+      padding: 0 16px;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      overflow-x: auto;
+    }
+    .tab-bar button {
+      font-family: 'Open Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      color: #888;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      padding: 10px 16px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: color .2s, border-color .2s;
+    }
+    .tab-bar button.active {
+      color: var(--petrol);
+      border-bottom-color: var(--petrol);
+    }
+    .tab-bar button:hover:not(.active) { color: var(--petrol); }
+
+    /* ── Pages ── */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ── Global Nav ── */
+    .site-nav {
+      background: var(--white);
+      padding: 14px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--grey);
+    }
+    .site-nav .logo-wrap { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+    .site-nav .logo-label { font-family: 'Marcellus', serif; font-size: 18px; color: var(--petrol); line-height: 1.1; }
+    .site-nav .logo-label span { display: block; font-family: 'Open Sans', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: .08em; color: var(--teal); text-transform: uppercase; }
+    .nav-links { display: flex; align-items: center; gap: 24px; }
+    .nav-links a { text-decoration: none; color: var(--ink); font-size: 14px; font-weight: 500; }
+    .btn-outline {
+      border: 1.5px solid var(--petrol);
+      color: var(--petrol);
+      background: none;
+      padding: 7px 18px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Open Sans', sans-serif;
+      transition: background .2s, color .2s;
+    }
+    .btn-outline:hover { background: var(--petrol); color: var(--white); }
+    .btn-solid {
+      background: var(--petrol);
+      color: var(--white);
+      border: 1.5px solid var(--petrol);
+      padding: 10px 22px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Open Sans', sans-serif;
+      transition: background .2s;
+    }
+    .btn-solid:hover { background: #34635b; }
+    .btn-white {
+      background: var(--white);
+      color: var(--petrol);
+      border: none;
+      padding: 11px 26px;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Open Sans', sans-serif;
+      transition: box-shadow .2s;
+    }
+    .btn-white:hover { box-shadow: 0 4px 16px rgba(0,0,0,.15); }
+
+    /* ═══════════════════════════
+       PAGE 1 — Course Overview
+    ═══════════════════════════ */
+    .hero {
+      background: var(--petrol);
+      padding: 80px 40px;
+      text-align: center;
+    }
+    .hero h1 { font-size: 60px; color: var(--white); margin-bottom: 18px; }
+    .hero p { font-size: 19px; color: rgba(255,255,255,.82); margin-bottom: 36px; max-width: 540px; margin-left: auto; margin-right: auto; line-height: 1.6; }
+
+    .bundle-banner {
+      background: var(--teal);
+      padding: 20px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .bundle-banner p { color: var(--white); font-size: 16px; font-weight: 600; }
+
+    .courses-section { padding: 60px 40px; max-width: 1100px; margin: 0 auto; }
+    .courses-section h2 { font-size: 34px; color: var(--ink); margin-bottom: 36px; }
+    .course-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+    .course-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .course-card:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(65,121,112,.2); }
+    .card-top-bar { height: 5px; background: var(--petrol); }
+    .card-body { padding: 26px; }
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+    }
+    .badge-live { background: #e8f5f3; color: var(--petrol); }
+    .badge-video { background: #eef3f8; color: #3a6080; }
+    .course-card h3 { font-size: 22px; color: var(--ink); margin-bottom: 10px; }
+    .course-card p { font-size: 14px; color: #777; line-height: 1.65; margin-bottom: 18px; }
+    .card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; }
+    .price-tag { font-family: 'Marcellus', serif; font-size: 30px; color: var(--petrol); }
+
+    /* ═══════════════════════════
+       PAGE 2 — Course Detail
+    ═══════════════════════════ */
+    .breadcrumb {
+      padding: 14px 40px;
+      background: var(--white);
+      border-bottom: 1px solid var(--grey);
+    }
+    .breadcrumb a {
+      color: var(--petrol);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .detail-hero {
+      background: var(--petrol);
+      padding: 52px 40px;
+      color: var(--white);
+    }
+    .detail-hero .badge { margin-bottom: 18px; background: rgba(255,255,255,.2); color: var(--white); }
+    .detail-hero h1 { font-size: 44px; margin-bottom: 10px; }
+    .detail-hero .instructor { font-size: 17px; opacity: .88; margin-bottom: 10px; }
+    .detail-meta { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 10px; }
+    .detail-meta span { font-size: 14px; opacity: .82; }
+    .detail-date { font-size: 15px; margin-top: 14px; opacity: .9; }
+    .detail-layout {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 36px;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 44px 40px;
+      align-items: start;
+    }
+    .detail-main h2 { font-size: 26px; margin-bottom: 14px; color: var(--ink); }
+    .detail-main p { font-size: 15px; line-height: 1.8; color: #555; margin-bottom: 28px; }
+    .module-list { list-style: none; }
+    .module-list li {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 15px 0;
+      border-bottom: 1px solid var(--grey);
+      font-size: 14px;
+      color: var(--ink);
+    }
+    .module-list li:last-child { border-bottom: none; }
+    .module-num {
+      width: 30px; height: 30px;
+      background: var(--petrol);
+      color: var(--white);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; flex-shrink: 0;
+    }
+    .module-dur { margin-left: auto; color: #999; font-size: 13px; }
+    .purchase-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: 0 4px 24px rgba(65,121,112,.16);
+      padding: 30px;
+      position: sticky;
+      top: 80px;
+    }
+    .purchase-card .price-big { font-family: 'Marcellus', serif; font-size: 46px; color: var(--petrol); margin-bottom: 20px; }
+    .feature-list { list-style: none; margin: 20px 0; }
+    .feature-list li { font-size: 14px; color: var(--ink); padding: 6px 0; display: flex; gap: 10px; align-items: center; }
+    .feature-list li::before { content: '✓'; color: var(--petrol); font-weight: 700; font-size: 15px; }
+    .divider { border: none; border-top: 1px solid var(--grey); margin: 22px 0; }
+    .bundle-note { font-size: 13px; color: #777; margin-bottom: 10px; }
+    .bundle-price-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .bundle-price-row .price-sm { font-family: 'Marcellus', serif; font-size: 22px; color: var(--petrol); }
+
+    /* ═══════════════════════════
+       PAGE 3 — Create Account
+    ═══════════════════════════ */
+    .account-wrap {
+      min-height: calc(100vh - 100px);
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 52px 20px;
+      background: var(--paper);
+    }
+    .account-card {
+      background: var(--white);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      padding: 48px 44px;
+      width: 100%;
+      max-width: 480px;
+      text-align: center;
+    }
+    .success-circle {
+      width: 76px; height: 76px;
+      background: #e8f5f3;
+      border: 2px solid #c0dcd8;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 26px;
+      font-size: 34px;
+    }
+    .account-card h1 { font-size: 32px; margin-bottom: 10px; color: var(--ink); }
+    .account-card > p { font-size: 15px; color: #666; line-height: 1.65; margin-bottom: 22px; }
+    .info-box {
+      background: #e8f5f3;
+      border: 1px solid #c0dcd8;
+      border-radius: 8px;
+      padding: 13px 18px;
+      text-align: left;
+      margin-bottom: 30px;
+      font-size: 14px;
+      color: #2e5f58;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .form-group { text-align: left; margin-bottom: 18px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 7px; }
+    .form-group input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid var(--grey);
+      border-radius: 7px;
+      font-size: 14px;
+      font-family: 'Open Sans', sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+      transition: border-color .2s;
+    }
+    .form-group input:focus { outline: none; border-color: var(--petrol); background: var(--white); }
+    .form-group input:disabled { opacity: .6; cursor: not-allowed; }
+    .btn-solid-full { width: 100%; padding: 14px; font-size: 15px; border-radius: 8px; }
+    .login-link { font-size: 13px; color: #999; margin-top: 18px; }
+    .login-link a { color: var(--petrol); text-decoration: none; font-weight: 600; }
+
+    /* ═══════════════════════════
+       PAGE 4 — Member Area
+    ═══════════════════════════ */
+    .member-nav {
+      background: var(--white);
+      padding: 14px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--grey);
+    }
+    .member-nav .nav-links a { font-size: 14px; font-weight: 600; color: #888; text-decoration: none; }
+    .member-nav .nav-links a.active { color: var(--petrol); border-bottom: 2px solid var(--petrol); padding-bottom: 2px; }
+    .avatar-row { display: flex; align-items: center; gap: 10px; }
+    .avatar {
+      width: 36px; height: 36px;
+      background: var(--petrol);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--white);
+      font-weight: 700; font-size: 13px;
+      flex-shrink: 0;
+    }
+    .avatar-row span { font-size: 14px; font-weight: 500; color: var(--ink); }
+    .logout-btn { font-size: 13px; color: #aaa; cursor: pointer; background: none; border: none; font-family: 'Open Sans', sans-serif; margin-left: 4px; }
+    .logout-btn:hover { color: var(--petrol); }
+    .welcome-band {
+      background: var(--petrol);
+      padding: 26px 40px;
+      color: var(--white);
+    }
+    .welcome-band h2 { font-size: 28px; margin-bottom: 5px; }
+    .welcome-band p { font-size: 14px; opacity: .82; }
+    .member-content { max-width: 1100px; margin: 0 auto; padding: 44px 40px; }
+    .member-content > h2 { font-size: 28px; margin-bottom: 28px; color: var(--ink); }
+    .member-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 22px;
+    }
+    .member-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .member-card.locked { opacity: .5; }
+    .member-card-top {
+      background: var(--petrol);
+      height: 96px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .member-card.locked .member-card-top { background: #aaa; }
+    .lock-icon { font-size: 30px; }
+    .sail-icon { font-size: 38px; }
+    .member-card-body { padding: 22px; }
+    .member-card-body h3 { font-size: 19px; margin-bottom: 6px; color: var(--ink); }
+    .member-card-body > p { font-size: 13px; color: #999; margin-bottom: 16px; }
+    .progress-bar-wrap { background: var(--grey); border-radius: 10px; height: 6px; margin-bottom: 10px; overflow: hidden; }
+    .progress-bar-fill { background: var(--petrol); height: 100%; border-radius: 10px; }
+
+    /* ═══════════════════════════
+       PAGE 5 — Course Player
+    ═══════════════════════════ */
+    .player-nav {
+      background: var(--ink);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .player-nav a {
+      color: rgba(255,255,255,.65);
+      font-size: 14px;
+      text-decoration: none;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .player-nav a:hover { color: var(--white); }
+    .player-nav .sep { color: rgba(255,255,255,.3); }
+    .player-nav .course-title { color: var(--white); font-size: 15px; font-weight: 600; }
+    .player-layout {
+      display: grid;
+      grid-template-columns: 3fr 1fr;
+      height: calc(100vh - 100px);
+      overflow: hidden;
+    }
+    .player-main { overflow-y: auto; background: var(--paper); }
+    .video-wrap {
+      background: #1a1a1a;
+      aspect-ratio: 16/9;
+      position: relative;
+      cursor: pointer;
+    }
+    .video-wrap:hover .play-overlay { background: rgba(0,0,0,.5); }
+    .play-overlay {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,.35);
+      transition: background .2s;
+    }
+    .play-btn {
+      width: 72px; height: 72px;
+      background: rgba(255,255,255,.92);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform .15s;
+    }
+    .video-wrap:hover .play-btn { transform: scale(1.08); }
+    .play-btn::after { content: ''; border: solid transparent; border-width: 14px 0 14px 24px; border-left-color: var(--petrol); margin-left: 5px; display: block; }
+    .video-controls {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: linear-gradient(transparent, rgba(0,0,0,.7));
+      padding: 24px 18px 14px;
+    }
+    .progress-track {
+      background: rgba(255,255,255,.3);
+      height: 4px;
+      border-radius: 2px;
+      cursor: pointer;
+      margin-bottom: 8px;
+      position: relative;
+    }
+    .progress-fill {
+      background: var(--white);
+      height: 100%;
+      border-radius: 2px;
+      position: relative;
+      transition: width .1s;
+    }
+    .progress-fill::after {
+      content: '';
+      position: absolute;
+      right: -6px; top: -4px;
+      width: 12px; height: 12px;
+      background: var(--white);
+      border-radius: 50%;
+    }
+    .time-row { display: flex; justify-content: space-between; align-items: center; }
+    .time-row span { color: rgba(255,255,255,.8); font-size: 12px; }
+    .player-info { padding: 30px 36px; }
+    .player-info h2 { font-size: 26px; margin-bottom: 12px; color: var(--ink); }
+    .player-info p { font-size: 14px; color: #666; line-height: 1.75; margin-bottom: 26px; }
+    .btn-download {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1.5px solid var(--petrol);
+      color: var(--petrol);
+      background: none;
+      padding: 10px 20px;
+      border-radius: 7px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Open Sans', sans-serif;
+      text-decoration: none;
+      transition: background .2s, color .2s;
+    }
+    .btn-download:hover { background: var(--petrol); color: var(--white); }
+    .sidebar-curriculum {
+      background: var(--white);
+      border-left: 1px solid var(--grey);
+      overflow-y: auto;
+    }
+    .sidebar-curriculum .cur-header {
+      padding: 20px 20px 15px;
+      border-bottom: 1px solid var(--grey);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--ink);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+    .cur-module {
+      padding: 15px 20px;
+      border-bottom: 1px solid var(--grey);
+      cursor: pointer;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      transition: background .15s;
+    }
+    .cur-module:hover { background: var(--paper); }
+    .cur-module.active { background: #e8f5f3; border-left: 3px solid var(--petrol); padding-left: 17px; }
+    .cur-icon { flex-shrink: 0; margin-top: 2px; }
+    .cur-icon.done { color: var(--petrol); font-size: 16px; font-weight: 700; }
+    .cur-icon.play-cur {
+      width: 20px; height: 20px;
+      background: var(--petrol);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .cur-icon.play-cur::after { content: ''; border: solid transparent; border-width: 5px 0 5px 9px; border-left-color: var(--white); margin-left: 2px; display: block; }
+    .cur-icon.todo { width: 18px; height: 18px; border: 2px solid #ccc; border-radius: 50%; margin-top: 1px; }
+    .cur-module-info .title { font-size: 13px; font-weight: 600; color: var(--ink); line-height: 1.4; }
+    .cur-module-info .dur { font-size: 12px; color: #aaa; margin-top: 3px; }
+    .cur-module.active .cur-module-info .title { color: var(--petrol); }
+
+    /* scrollbar thin */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--grey); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- Tab Navigation -->
+<div class="tab-bar">
+  <button class="active" onclick="showPage(0)">1 · Kursübersicht</button>
+  <button onclick="showPage(1)">2 · Kursdetail</button>
+  <button onclick="showPage(2)">3 · Account anlegen</button>
+  <button onclick="showPage(3)">4 · Mitgliederbereich</button>
+  <button onclick="showPage(4)">5 · Kurs-Player</button>
+</div>
+
+<!-- ════════════════════════════════════════
+     PAGE 1 — Course Overview
+════════════════════════════════════════ -->
+<div class="page active" id="page-0">
+  <nav class="site-nav">
+    <div class="logo-wrap" onclick="showPage(0)">
+      <svg width="54" height="54" viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="27" cy="27" r="26" stroke="#417970" stroke-width="2" fill="#f7f1ea"/>
+        <path id="topArc" d="M 7,27 A 20,20 0 0,1 47,27" fill="none"/>
+        <text font-family="Open Sans,sans-serif" font-size="6.2" font-weight="700" fill="#417970" letter-spacing="1.8">
+          <textPath href="#topArc" startOffset="5%">SEATRIBE</textPath>
+        </text>
+        <path id="botArc" d="M 7,27 A 20,20 0 0,0 47,27" fill="none"/>
+        <text font-family="Open Sans,sans-serif" font-size="5" font-weight="600" fill="#417970" letter-spacing="1.1">
+          <textPath href="#botArc" startOffset="3%">SKIPPER ACADEMY</textPath>
+        </text>
+        <text x="27" y="31" text-anchor="middle" font-size="14" fill="#417970">⚓</text>
+      </svg>
+      <div class="logo-label">SeaTribe<span>Skipper Academy</span></div>
+    </div>
+    <div class="nav-links">
+      <a href="#">Kurse</a>
+      <a href="#">Über uns</a>
+      <button class="btn-outline" onclick="showPage(3)">Login</button>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <h1>Werde zum Skipper.</h1>
+    <p>Online-Kurse von erfahrenen Seglern.<br>Wann und wo du willst.</p>
+    <button class="btn-white" onclick="document.getElementById('kurse').scrollIntoView({behavior:'smooth'})">Alle Kurse entdecken</button>
+  </section>
+
+  <div class="bundle-banner">
+    <p>🎁 Alle 4 Kurse im Bundle – nur <strong>199 €</strong></p>
+    <button class="btn-white" onclick="showPage(2)">Jetzt Bundle kaufen</button>
+  </div>
+
+  <section class="courses-section" id="kurse">
+    <h2>Unsere Kurse</h2>
+    <div class="course-grid">
+
+      <div class="course-card">
+        <div class="card-top-bar"></div>
+        <div class="card-body">
+          <span class="badge badge-live">Live Session</span>
+          <h3>Grundlagen des Segelns</h3>
+          <p>Lerne die fundamentalen Prinzipien des Segelns – von Knotenkunde bis zum ersten Ablegen. Ideal für absolute Einsteiger mit dem Ziel, schnell sicher auf dem Wasser zu sein.</p>
+          <div class="card-footer">
+            <span class="price-tag">79 €</span>
+            <button class="btn-solid" onclick="showPage(1)">Mehr erfahren</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="course-card">
+        <div class="card-top-bar"></div>
+        <div class="card-body">
+          <span class="badge badge-video">Video-Kurs</span>
+          <h3>Navigation auf See</h3>
+          <p>Kartenlesen, GPS-Navigation und klassische Kompassnavigation. Lerne, dich sicher auf dem Wasser zu orientieren – auch ohne Netzempfang und in unbekannten Gewässern.</p>
+          <div class="card-footer">
+            <span class="price-tag">79 €</span>
+            <button class="btn-solid" onclick="showPage(1)">Mehr erfahren</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="course-card">
+        <div class="card-top-bar"></div>
+        <div class="card-body">
+          <span class="badge badge-video">Video-Kurs</span>
+          <h3>Wetterkunde für Skipper</h3>
+          <p>Verstehe Wetterphänomene, lese Wetterkarten und lerne, Risiken frühzeitig zu erkennen. Sicherheit beginnt mit dem richtigen Wissen über das Wetter auf See.</p>
+          <div class="card-footer">
+            <span class="price-tag">79 €</span>
+            <button class="btn-solid" onclick="showPage(1)">Mehr erfahren</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="course-card">
+        <div class="card-top-bar"></div>
+        <div class="card-body">
+          <span class="badge badge-live">Live Session</span>
+          <h3>Seemannschaft &amp; Sicherheit</h3>
+          <p>Notsignale, MOB-Manöver, Rettungsausrüstung und Verhalten in Extremsituationen. Der Kurs, der im Ernstfall den Unterschied macht – und Leben retten kann.</p>
+          <div class="card-footer">
+            <span class="price-tag">79 €</span>
+            <button class="btn-solid" onclick="showPage(1)">Mehr erfahren</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</div>
+
+<!-- ════════════════════════════════════════
+     PAGE 2 — Course Detail
+════════════════════════════════════════ -->
+<div class="page" id="page-1">
+  <div class="breadcrumb">
+    <a href="#" onclick="showPage(0)">← Alle Kurse</a>
+  </div>
+
+  <div class="detail-hero">
+    <span class="badge">Live Session</span>
+    <h1>Grundlagen des Segelns</h1>
+    <p class="instructor">Mit Matthias Hardtke</p>
+    <div class="detail-meta">
+      <span>⏱ 2 Stunden</span>
+      <span>📚 5 Module</span>
+      <span>🗣 Deutsch</span>
+    </div>
+    <p class="detail-date">📅 15. Januar 2026, 18:00 Uhr</p>
+  </div>
+
+  <div class="detail-layout">
+    <div class="detail-main">
+      <h2>Über diesen Kurs</h2>
+      <p>Dieser Kurs ist der perfekte Einstieg in die Welt des Segelns. Du lernst alles, was du brauchst, um sicher und selbstbewusst auf dem Wasser zu sein – von grundlegenden Seemannsknoten über die richtige Handhabung der Segel bis hin zum ersten eigenständigen Ablegen. Matthias Hardtke, erfahrener Regattasegler und zertifizierter Skipper-Ausbilder, führt dich in einer interaktiven Live-Session durch alle Themen.</p>
+      <p>Du kannst Fragen in Echtzeit stellen, bekommst direktes Feedback und erhältst nach der Session eine vollständige Aufzeichnung. Perfekt für alle, die endlich den ersten Schritt wagen möchten.</p>
+
+      <h2>Kursinhalt</h2>
+      <ul class="module-list">
+        <li><span class="module-num">1</span> Einführung &amp; Bootstypen verstehen <span class="module-dur">20 min</span></li>
+        <li><span class="module-num">2</span> Seemannsknoten: die 7 wichtigsten Knoten <span class="module-dur">25 min</span></li>
+        <li><span class="module-num">3</span> Windlehre: Kurse zum Wind erklärt <span class="module-dur">20 min</span></li>
+        <li><span class="module-num">4</span> Segel setzen, trimmen und reffen <span class="module-dur">25 min</span></li>
+        <li><span class="module-num">5</span> Anlegen &amp; Ablegen – Praxis &amp; Q&amp;A <span class="module-dur">30 min</span></li>
+      </ul>
+    </div>
+
+    <div class="purchase-card">
+      <div class="price-big">79 €</div>
+      <button class="btn-solid" style="width:100%;padding:13px;font-size:15px;margin-bottom:4px" onclick="showPage(2)">Jetzt kaufen</button>
+      <ul class="feature-list">
+        <li>Sofortiger Zugang</li>
+        <li>Live Q&amp;A Session</li>
+        <li>Aufzeichnung enthalten</li>
+        <li>30-Tage Rückgaberecht</li>
+      </ul>
+      <hr class="divider">
+      <p class="bundle-note">Oder im Bundle sparen:</p>
+      <div class="bundle-price-row">
+        <span style="font-size:13px;color:#777">Alle 4 Kurse</span>
+        <span class="price-sm">199 €</span>
+      </div>
+      <button class="btn-outline" style="width:100%" onclick="showPage(2)">Bundle kaufen</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     PAGE 3 — Create Account
+════════════════════════════════════════ -->
+<div class="page" id="page-2">
+  <div class="account-wrap">
+    <div class="account-card">
+      <div class="success-circle">✅</div>
+      <h1>Zahlung erfolgreich!</h1>
+      <p>Lege jetzt deinen Account an um auf deine Kurse zuzugreifen.</p>
+      <div class="info-box">
+        <span>🎓</span>
+        <span>Du hast gekauft: <strong>Grundlagen des Segelns</strong></span>
+      </div>
+      <div class="form-group">
+        <label>E-Mail-Adresse</label>
+        <input type="email" value="matthias@seatribe.de" disabled>
+      </div>
+      <div class="form-group">
+        <label>Passwort wählen</label>
+        <input type="password" placeholder="Mindestens 8 Zeichen">
+      </div>
+      <div class="form-group">
+        <label>Passwort bestätigen</label>
+        <input type="password" placeholder="Passwort wiederholen">
+      </div>
+      <button class="btn-solid btn-solid-full" onclick="showPage(3)">Account anlegen &amp; loslegen →</button>
+      <p class="login-link">Bereits ein Konto? <a href="#" onclick="showPage(3)">Einloggen</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     PAGE 4 — Member Area
+════════════════════════════════════════ -->
+<div class="page" id="page-3">
+  <nav class="member-nav">
+    <div class="logo-wrap" style="display:flex;align-items:center;gap:10px;cursor:pointer" onclick="showPage(0)">
+      <svg width="36" height="36" viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="27" cy="27" r="26" stroke="#417970" stroke-width="2" fill="#f7f1ea"/>
+        <path id="topArc2" d="M 7,27 A 20,20 0 0,1 47,27" fill="none"/>
+        <text font-family="Open Sans,sans-serif" font-size="6.2" font-weight="700" fill="#417970" letter-spacing="1.8"><textPath href="#topArc2" startOffset="5%">SEATRIBE</textPath></text>
+        <path id="botArc2" d="M 7,27 A 20,20 0 0,0 47,27" fill="none"/>
+        <text font-family="Open Sans,sans-serif" font-size="5" font-weight="600" fill="#417970" letter-spacing="1.1"><textPath href="#botArc2" startOffset="3%">SKIPPER ACADEMY</textPath></text>
+        <text x="27" y="31" text-anchor="middle" font-size="14" fill="#417970">⚓</text>
+      </svg>
+      <span style="font-family:'Marcellus',serif;font-size:16px;color:var(--petrol)">SeaTribe</span>
+    </div>
+    <div class="nav-links">
+      <a href="#" class="active">Meine Kurse</a>
+      <a href="#">Einstellungen</a>
+    </div>
+    <div class="avatar-row">
+      <div class="avatar">MH</div>
+      <span>M. Hardtke</span>
+      <button class="logout-btn" onclick="showPage(0)">Ausloggen</button>
+    </div>
+  </nav>
+
+  <div class="welcome-band">
+    <h2>Willkommen zurück, Matthias 👋</h2>
+    <p>Du hast 2 von 4 Kursen freigeschaltet</p>
+  </div>
+
+  <div class="member-content">
+    <h2>Meine Kurse</h2>
+    <div class="member-grid">
+
+      <div class="member-card">
+        <div class="member-card-top">
+          <span class="sail-icon">⛵</span>
+        </div>
+        <div class="member-card-body">
+          <span class="badge badge-live" style="margin-bottom:8px">Live Session</span>
+          <h3>Grundlagen des Segelns</h3>
+          <p>Mit Matthias Hardtke · 5 Module · 2 Stunden</p>
+          <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:60%"></div></div>
+          <small style="color:#999;font-size:12px">3 von 5 Modulen abgeschlossen</small><br><br>
+          <button class="btn-solid" style="width:100%" onclick="showPage(4)">Kurs fortsetzen →</button>
+        </div>
+      </div>
+
+      <div class="member-card">
+        <div class="member-card-top">
+          <span class="sail-icon">🧭</span>
+        </div>
+        <div class="member-card-body">
+          <span class="badge badge-video" style="margin-bottom:8px">Video-Kurs</span>
+          <h3>Navigation auf See</h3>
+          <p>Mit Matthias Hardtke · 5 Module · 2.5 Stunden</p>
+          <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:0%"></div></div>
+          <small style="color:#999;font-size:12px">Noch nicht gestartet</small><br><br>
+          <button class="btn-solid" style="width:100%" onclick="showPage(4)">Kurs starten →</button>
+        </div>
+      </div>
+
+      <div class="member-card locked">
+        <div class="member-card-top">
+          <span class="lock-icon">🔒</span>
+        </div>
+        <div class="member-card-body">
+          <span class="badge badge-video" style="margin-bottom:8px">Video-Kurs</span>
+          <h3>Wetterkunde für Skipper</h3>
+          <p>Mit Matthias Hardtke · 5 Module · 2 Stunden</p>
+          <br>
+          <button class="btn-outline" style="width:100%" onclick="showPage(1)">Kurs kaufen – 79 €</button>
+        </div>
+      </div>
+
+      <div class="member-card locked">
+        <div class="member-card-top">
+          <span class="lock-icon">🔒</span>
+        </div>
+        <div class="member-card-body">
+          <span class="badge badge-live" style="margin-bottom:8px">Live Session</span>
+          <h3>Seemannschaft &amp; Sicherheit</h3>
+          <p>Mit Matthias Hardtke · 5 Module · 2 Stunden</p>
+          <br>
+          <button class="btn-outline" style="width:100%" onclick="showPage(1)">Kurs kaufen – 79 €</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     PAGE 5 — Course Player
+════════════════════════════════════════ -->
+<div class="page" id="page-4">
+  <div class="player-nav">
+    <a href="#" onclick="showPage(3)">← Meine Kurse</a>
+    <span class="sep">›</span>
+    <span class="course-title">Grundlagen des Segelns</span>
+  </div>
+
+  <div class="player-layout">
+    <div class="player-main">
+      <div class="video-wrap" id="videoWrap" onclick="togglePlay()">
+        <div class="play-overlay" id="playOverlay">
+          <div class="play-btn" id="playBtnEl"></div>
+        </div>
+        <div class="video-controls">
+          <div class="progress-track" id="progressTrack" onclick="seekVideo(event)">
+            <div class="progress-fill" id="progressFill" style="width:34%"></div>
+          </div>
+          <div class="time-row">
+            <span id="timeDisplay">12:14</span>
+            <span>36:00</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="player-info">
+        <h2 id="moduleTitle">Modul 2: Seemannsknoten – Die 7 wichtigsten Knoten</h2>
+        <p id="moduleDesc">In diesem Modul lernst du die sieben wichtigsten Knoten, die jeder Segler beherrschen sollte. Von der Acht über den Palstek bis zum Rundtörn mit zwei halben Schlägen – du übst jeden Knoten Schritt für Schritt und verstehst, wann welcher Knoten eingesetzt wird. Am Ende kannst du alle Knoten sicher und schnell binden.</p>
+        <a class="btn-download" href="#">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Kursunterlagen herunterladen (PDF)
+        </a>
+      </div>
+    </div>
+
+    <div class="sidebar-curriculum">
+      <div class="cur-header">Kursinhalt</div>
+
+      <div class="cur-module" onclick="setModule(this,'Modul 1: Einführung &amp; Bootstypen verstehen','Lerne die verschiedenen Segelboottypen kennen – von der Jolle bis zur Yacht. Du verstehst die grundlegenden Bauteile, Fachbegriffe und die Physik des Segelns. Ein solides Fundament für alle weiteren Module.')">
+        <span class="cur-icon done">✓</span>
+        <div class="cur-module-info">
+          <div class="title">Einführung &amp; Bootstypen verstehen</div>
+          <div class="dur">20 min</div>
+        </div>
+      </div>
+
+      <div class="cur-module active" onclick="setModule(this,'Modul 2: Seemannsknoten – Die 7 wichtigsten Knoten','In diesem Modul lernst du die sieben wichtigsten Knoten, die jeder Segler beherrschen sollte. Von der Acht über den Palstek bis zum Rundtörn mit zwei halben Schlägen – du übst jeden Knoten Schritt für Schritt und verstehst, wann welcher Knoten eingesetzt wird. Am Ende kannst du alle Knoten sicher und schnell binden.')">
+        <span class="cur-icon play-cur"></span>
+        <div class="cur-module-info">
+          <div class="title">Seemannsknoten: die 7 wichtigsten Knoten</div>
+          <div class="dur">25 min</div>
+        </div>
+      </div>
+
+      <div class="cur-module" onclick="setModule(this,'Modul 3: Windlehre – Kurse zum Wind erklärt','Verstehe die verschiedenen Windkurse: Am Wind, Halbwind, Raumschots und Vorwind. Du lernst, wie der Wind die Segelführung beeinflusst und wie du dein Boot optimal auf den jeweiligen Kurs einstellst.')">
+        <span class="cur-icon todo"></span>
+        <div class="cur-module-info">
+          <div class="title">Windlehre: Kurse zum Wind erklärt</div>
+          <div class="dur">20 min</div>
+        </div>
+      </div>
+
+      <div class="cur-module" onclick="setModule(this,'Modul 4: Segel setzen, trimmen und reffen','Lerne, wie du Groß- und Vorsegel korrekt setzt, trimmst und bei aufkommendem Wind reefst. Praktische Tipps vom erfahrenen Skipper, wie du dein Segelboot auch bei wechselnden Windverhältnissen optimal steuerst.')">
+        <span class="cur-icon todo"></span>
+        <div class="cur-module-info">
+          <div class="title">Segel setzen, trimmen und reffen</div>
+          <div class="dur">25 min</div>
+        </div>
+      </div>
+
+      <div class="cur-module" onclick="setModule(this,'Modul 5: Anlegen &amp; Ablegen – Praxis &amp; Q&amp;A','Das krönende Abschlussmodul: Du lernst die wichtigsten Manöver beim An- und Ablegen, vermeidest typische Anfängerfehler und bekommst in der Live Q&amp;A-Runde deine persönlichen Fragen beantwortet.')">
+        <span class="cur-icon todo"></span>
+        <div class="cur-module-info">
+          <div class="title">Anlegen &amp; Ablegen – Praxis &amp; Q&amp;A</div>
+          <div class="dur">30 min</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── Tab / page switching ──
+  const pages = document.querySelectorAll('.page');
+  const tabs  = document.querySelectorAll('.tab-bar button');
+
+  function showPage(n) {
+    pages.forEach((p,i) => p.classList.toggle('active', i === n));
+    tabs.forEach((t,i)  => t.classList.toggle('active', i === n));
+    window.scrollTo(0,0);
+  }
+
+  // ── Video player ──
+  let playing = false;
+  let progress = 34;
+  let interval = null;
+
+  function togglePlay() {
+    playing = !playing;
+    const btn = document.getElementById('playBtnEl');
+    if (playing) {
+      btn.style.cssText = 'width:72px;height:72px;background:rgba(255,255,255,.92);border-radius:50%;display:flex;align-items:center;justify-content:center;gap:5px;';
+      btn.innerHTML = '<span style="width:7px;height:24px;background:#417970;border-radius:2px;display:block"></span><span style="width:7px;height:24px;background:#417970;border-radius:2px;display:block"></span>';
+      interval = setInterval(() => {
+        progress = Math.min(100, progress + 0.15);
+        document.getElementById('progressFill').style.width = progress + '%';
+        const totalSec = 36 * 60;
+        const curSec   = Math.round(totalSec * progress / 100);
+        const m = String(Math.floor(curSec/60)).padStart(2,'0');
+        const s = String(curSec % 60).padStart(2,'0');
+        document.getElementById('timeDisplay').textContent = m + ':' + s;
+        if (progress >= 100) { playing = false; clearInterval(interval); resetPlayBtn(); }
+      }, 100);
+    } else {
+      clearInterval(interval);
+      resetPlayBtn();
+    }
+  }
+
+  function resetPlayBtn() {
+    const btn = document.getElementById('playBtnEl');
+    btn.innerHTML = '';
+    btn.style.cssText = '';
+    btn.className = 'play-btn';
+  }
+
+  function seekVideo(e) {
+    e.stopPropagation();
+    const track = document.getElementById('progressTrack');
+    const rect  = track.getBoundingClientRect();
+    const pct   = Math.max(0, Math.min(100, (e.clientX - rect.left) / rect.width * 100));
+    progress = pct;
+    document.getElementById('progressFill').style.width = pct + '%';
+    const totalSec = 36 * 60;
+    const curSec   = Math.round(totalSec * pct / 100);
+    const m = String(Math.floor(curSec/60)).padStart(2,'0');
+    const s = String(curSec % 60).padStart(2,'0');
+    document.getElementById('timeDisplay').textContent = m + ':' + s;
+  }
+
+  // ── Curriculum switching ──
+  function setModule(el, title, desc) {
+    document.querySelectorAll('.cur-module').forEach(m => m.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('moduleTitle').innerHTML = title;
+    document.getElementById('moduleDesc').innerHTML  = desc;
+    if (playing) { clearInterval(interval); playing = false; resetPlayBtn(); }
+    progress = 0;
+    document.getElementById('progressFill').style.width = '0%';
+    document.getElementById('timeDisplay').textContent = '00:00';
+  }
+</script>
+</body>
+</html>
