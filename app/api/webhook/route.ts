@@ -42,71 +42,36 @@ export async function POST(request: NextRequest) {
     try {
       const supabase = await createAdminClient();
 
-      // Check if user already exists
-      const { data: existingUsers } = await supabase.auth.admin.listUsers();
-      const existingUser = existingUsers?.users?.find(
-        (u) => u.email === customerEmail
-      );
-
-      let userId: string;
-
-      if (existingUser) {
-        userId = existingUser.id;
-      } else {
-        // Create new user with a random password (they'll set their own via magic link)
-        const { data: newUser, error: createError } =
-          await supabase.auth.admin.createUser({
-            email: customerEmail,
-            email_confirm: true,
-            user_metadata: {
-              source: "stripe_purchase",
-            },
-          });
-
-        if (createError || !newUser.user) {
-          console.error("Failed to create user:", createError);
-          return NextResponse.json(
-            { error: "Failed to create user" },
-            { status: 500 }
-          );
-        }
-        userId = newUser.user.id;
+      // Invite user (creates if new, re-invites if existing) and send magic link email
+      const domain = process.env.NEXT_PUBLIC_DOMAIN || "https://seatribe-academy-portal.vercel.app";
+      const { data: inviteData, error: inviteError } = await supabase.auth.admin.inviteUserByEmail(customerEmail, {
+        redirectTo: `${domain}/auth/callback?next=/portal`,
+      });
+      if (inviteError) {
+        console.error("Failed to send invite email:", inviteError);
+        // Don't return error — purchase is already recorded, user can request new link
       }
 
       // Insert purchase record
-      const { error: purchaseError } = await supabase
-        .from("purchases")
-        .upsert(
-          {
-            user_id: userId,
-            course_id: courseId,
-            stripe_session_id: stripeSessionId,
-            status: "paid",
-            amount: session.amount_total ? session.amount_total / 100 : 0,
-            currency: session.currency?.toUpperCase() || "EUR",
-          },
-          { onConflict: "stripe_session_id" }
-        );
+      if (inviteData?.user?.id) {
+        const { error: purchaseError } = await supabase
+          .from("purchases")
+          .upsert(
+            {
+              user_id: inviteData.user.id,
+              course_id: courseId,
+              stripe_session_id: stripeSessionId,
+              status: "paid",
+              amount: session.amount_total ? session.amount_total / 100 : 0,
+              currency: session.currency?.toUpperCase() || "EUR",
+            },
+            { onConflict: "stripe_session_id" }
+          );
 
-      if (purchaseError) {
-        console.error("Failed to insert purchase:", purchaseError);
-        // Don't fail – user is created, we can retry purchase record separately
-      }
-
-      // Send magic link / invite email so user can log in
-      const domain =
-        process.env.NEXT_PUBLIC_DOMAIN || "http://localhost:3000";
-
-      const { error: magicLinkError } = await supabase.auth.admin.generateLink({
-        type: "magiclink",
-        email: customerEmail,
-        options: {
-          redirectTo: `${domain}/auth/callback?next=/portal`,
-        },
-      });
-
-      if (magicLinkError) {
-        console.error("Failed to send magic link:", magicLinkError);
+        if (purchaseError) {
+          console.error("Failed to insert purchase:", purchaseError);
+          // Don't fail – user is invited, we can retry purchase record separately
+        }
       }
 
       return NextResponse.json({ received: true });
