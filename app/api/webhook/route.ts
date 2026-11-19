@@ -62,8 +62,7 @@ export async function POST(request: NextRequest) {
               course_id: courseId,
               stripe_session_id: stripeSessionId,
               status: "paid",
-              amount: session.amount_total ? session.amount_total / 100 : 0,
-              currency: session.currency?.toUpperCase() || "EUR",
+              amount_cents: session.amount_total ?? 0,
             },
             { onConflict: "stripe_session_id" }
           );
