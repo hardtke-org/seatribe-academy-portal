@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+:root {
+  --color-primary: #417970;
+  --color-secondary: #86a6a2;
+  --color-text: #3c3d38;
+  --color-bg: #f7f1ea;
+  --color-light-grey: #dedad4;
+  --color-white: #ffffff;
+}
+
+body {
+  font-family: var(--font-open-sans), "Open Sans", sans-serif;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-marcellus), "Marcellus", serif;
+}
+
+.font-heading {
+  font-family: var(--font-marcellus), "Marcellus", serif;
+}
+
+.font-body {
+  font-family: var(--font-open-sans), "Open Sans", sans-serif;
+}
