@@ -12,46 +12,44 @@ function AuthCallbackInner() {
     const supabase = createClient()
     const next = searchParams.get('next') || '/portal'
 
-    // Check if already signed in (hash token already processed by Supabase client)
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    async function handle() {
+      // 1. Try PKCE flow first (code in query string — from OTP magic links)
+      const code = searchParams.get('code')
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code)
+        if (!error) {
+          router.replace(next)
+          return
+        }
+      }
+
+      // 2. Try implicit flow (hash in URL — from inviteUserByEmail)
+      const hash = window.location.hash.substring(1)
+      if (hash) {
+        const params = new URLSearchParams(hash)
+        const access_token = params.get('access_token')
+        const refresh_token = params.get('refresh_token')
+        if (access_token && refresh_token) {
+          const { error } = await supabase.auth.setSession({ access_token, refresh_token })
+          if (!error) {
+            router.replace(next)
+            return
+          }
+        }
+      }
+
+      // 3. Already signed in?
+      const { data: { session } } = await supabase.auth.getSession()
       if (session) {
         router.replace(next)
         return
       }
 
-      // Handle PKCE flow (code in query string — from OTP magic links)
-      const code = searchParams.get('code')
-      if (code) {
-        supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
-          if (!error) {
-            router.replace(next)
-          } else {
-            router.replace('/login?error=auth_callback_error')
-          }
-        })
-        return
-      }
+      // 4. Nothing worked
+      router.replace('/login?error=auth_callback_error')
+    }
 
-      // Handle implicit flow (hash token — from inviteUserByEmail)
-      // The @supabase/ssr browser client automatically reads the hash and fires SIGNED_IN
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-        if (event === 'SIGNED_IN' && session) {
-          subscription.unsubscribe()
-          router.replace(next)
-        }
-      })
-
-      // Fallback: redirect to login after 5s if nothing happens
-      const timeout = setTimeout(() => {
-        subscription.unsubscribe()
-        router.replace('/login?error=auth_callback_error')
-      }, 5000)
-
-      return () => {
-        subscription.unsubscribe()
-        clearTimeout(timeout)
-      }
-    })
+    handle()
   }, [router, searchParams])
 
   return (
